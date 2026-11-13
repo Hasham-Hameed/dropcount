@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, UploadFile,File,HTTPException
 from fastapi.staticfiles import StaticFiles
 
@@ -16,5 +17,5 @@ async def analyze(file: UploadFile = File(...)):
         "words": len(content.split()),
         "lines": len(content.splitlines()),
     }
-
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+if os.path.isdir("public"):
+    app.mount("/", StaticFiles(directory="public", html=True), name="static")
