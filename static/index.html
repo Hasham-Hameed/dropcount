@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DropCount</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      margin: 0; padding: 24px 16px;
+      background: #f5f6fa; color: #222;
+      display: flex; justify-content: center;
+    }
+    .container { width: 100%; max-width: 520px; text-align: center; }
+    h1 { margin-bottom: 4px; }
+    .sub { color: #666; margin-top: 0; }
+
+    #drop {
+      border: 3px dashed #999; border-radius: 16px;
+      padding: 48px 16px; background: #fff;
+      cursor: pointer; font-size: 18px;
+      transition: 0.2s;
+    }
+    #drop.over { background: #eef; border-color: #55f; }
+
+    #filename { margin-top: 24px; font-weight: bold; word-break: break-all; }
+    #status { margin-top: 12px; }
+    .error { color: #c00; }
+
+    .cards { display: none; gap: 10px; margin-top: 12px; }
+    .card {
+      flex: 1; background: #fff; border-radius: 12px;
+      padding: 16px 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .card .num { font-size: 26px; font-weight: bold; }
+    .card .label { font-size: 13px; color: #666; margin-top: 4px; }
+
+    @media (max-width: 400px) {
+      .card .num { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>DropCount</h1>
+    <p class="sub">Count the characters, words and lines of a text file</p>
+
+    <div id="drop">Drop a file here or tap to choose</div>
+    <input type="file" id="fileInput" hidden>
+
+    <div id="filename"></div>
+    <div id="status"></div>
+
+    <div class="cards" id="cards">
+      <div class="card"><div class="num" id="chars">0</div><div class="label">Characters</div></div>
+      <div class="card"><div class="num" id="words">0</div><div class="label">Words</div></div>
+      <div class="card"><div class="num" id="lines">0</div><div class="label">Lines</div></div>
+    </div>
+  </div>
+
+  <script>
+    const drop = document.getElementById("drop");
+    const fileInput = document.getElementById("fileInput");
+    const filename = document.getElementById("filename");
+    const status = document.getElementById("status");
+    const cards = document.getElementById("cards");
+
+    drop.onclick = () => fileInput.click();
+    fileInput.onchange = () => upload(fileInput.files[0]);
+
+    drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("over"); };
+    drop.ondragleave = () => drop.classList.remove("over");
+    drop.ondrop = (e) => {
+      e.preventDefault();
+      drop.classList.remove("over");
+      upload(e.dataTransfer.files[0]);
+    };
+
+    async function upload(file) {
+      if (!file) return;
+      filename.textContent = file.name;
+      status.className = "";
+      status.textContent = "Analyzing...";
+      cards.style.display = "none";
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/analyze", { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (!res.ok) {
+          status.className = "error";
+          status.textContent = data.detail || "Something went wrong";
+          return;
+        }
+
+        status.textContent = "";
+        document.getElementById("chars").textContent = data.characters.toLocaleString();
+        document.getElementById("words").textContent = data.words.toLocaleString();
+        document.getElementById("lines").textContent = data.lines.toLocaleString();
+        cards.style.display = "flex";
+      } catch (err) {
+        status.className = "error";
+        status.textContent = "Could not reach the server";
+      }
+      fileInput.value = "";
+    }
+  </script>
+</body>
+</html>
