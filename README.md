@@ -2,7 +2,7 @@
 
 A tiny web app that analyzes a text file. Drop a file onto the page and it instantly shows the number of **characters**, **words** and **lines**.
 
-**Live demo:** https://dropdown-kohl.vercel.app
+**Live demo:** https://dropcount-kohl.vercel.app
 
 ## Features
 - Drag and drop a file or tap to choose one (works on phones too)
