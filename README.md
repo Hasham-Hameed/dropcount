@@ -38,5 +38,6 @@ dropcount/
     index.html       # frontend
 ```
 
-## Author
+## Regards
+
 Hasham Hameed, [GitHub](https://github.com/Hasham-Hameed)
